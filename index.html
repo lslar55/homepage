@@ -50,15 +50,24 @@
   </main>
 
   <div id="update-modal" class="update-modal hidden" aria-hidden="true">
-    <div class="update-modal-content card" role="dialog" aria-modal="true" aria-labelledby="update-modal-title">
+    <div
+      class="update-modal-content card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="update-modal-title"
+    >
       <p class="update-badge">站点更新提醒</p>
       <h2 id="update-modal-title">发现新版本</h2>
       <p class="update-modal-text">
-        网站内容已经更新，点击“立即更新”即可查看最新版本。
+        网站内容已经更新，点击“立即更新”即可刷新并查看最新版本。
       </p>
       <div class="update-actions">
-        <button id="update-now" class="update-btn update-btn-primary" type="button">立即更新</button>
-        <button id="update-later" class="update-btn update-btn-secondary" type="button">稍后再说</button>
+        <button id="update-now" class="update-btn update-btn-primary" type="button">
+          立即更新
+        </button>
+        <button id="update-later" class="update-btn update-btn-secondary" type="button">
+          稍后再说
+        </button>
       </div>
     </div>
   </div>
@@ -77,11 +86,13 @@
       function showModal() {
         modal.classList.remove("hidden");
         modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
       }
 
       function hideModal() {
         modal.classList.add("hidden");
         modal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
       }
 
       async function checkForUpdate() {
@@ -105,9 +116,25 @@
 
             updateNowBtn.onclick = function () {
               localStorage.setItem(STORAGE_KEY, latestVersion);
-              const url = new URL(window.location.href);
-              url.searchParams.set("v", latestVersion);
-              window.location.href = url.toString();
+
+              const nextUrl = new URL(window.location.href);
+              nextUrl.searchParams.set("update", Date.now().toString());
+
+              if ("caches" in window) {
+                caches.keys()
+                  .then(function (keys) {
+                    return Promise.all(
+                      keys.map(function (key) {
+                        return caches.delete(key);
+                      })
+                    );
+                  })
+                  .finally(function () {
+                    window.location.replace(nextUrl.toString());
+                  });
+              } else {
+                window.location.replace(nextUrl.toString());
+              }
             };
 
             updateLaterBtn.onclick = function () {
@@ -118,6 +145,18 @@
           console.error("检查更新失败：", error);
         }
       }
+
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+          hideModal();
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+          hideModal();
+        }
+      });
 
       checkForUpdate();
     })();

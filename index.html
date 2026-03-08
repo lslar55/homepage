@@ -78,10 +78,11 @@
       const VERSION_URL = "./version.json?ts=" + Date.now();
 
       const modal = document.getElementById("update-modal");
+      const modalContent = document.querySelector(".update-modal-content");
       const updateNowBtn = document.getElementById("update-now");
       const updateLaterBtn = document.getElementById("update-later");
 
-      if (!modal || !updateNowBtn || !updateLaterBtn) return;
+      if (!modal || !modalContent || !updateNowBtn || !updateLaterBtn) return;
 
       function showModal() {
         modal.classList.remove("hidden");
@@ -93,6 +94,28 @@
         modal.classList.add("hidden");
         modal.setAttribute("aria-hidden", "true");
         document.body.style.overflow = "";
+      }
+
+      async function forceRefresh(latestVersion) {
+        localStorage.setItem(STORAGE_KEY, latestVersion);
+
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set("update", Date.now().toString());
+
+        try {
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            await Promise.all(
+              keys.map(function (key) {
+                return caches.delete(key);
+              })
+            );
+          }
+        } catch (error) {
+          console.warn("清理缓存失败：", error);
+        }
+
+        window.location.href = currentUrl.toString();
       }
 
       async function checkForUpdate() {
@@ -114,30 +137,15 @@
           if (seenVersion !== latestVersion) {
             showModal();
 
-            updateNowBtn.onclick = function () {
-              localStorage.setItem(STORAGE_KEY, latestVersion);
-
-              const nextUrl = new URL(window.location.href);
-              nextUrl.searchParams.set("update", Date.now().toString());
-
-              if ("caches" in window) {
-                caches.keys()
-                  .then(function (keys) {
-                    return Promise.all(
-                      keys.map(function (key) {
-                        return caches.delete(key);
-                      })
-                    );
-                  })
-                  .finally(function () {
-                    window.location.replace(nextUrl.toString());
-                  });
-              } else {
-                window.location.replace(nextUrl.toString());
-              }
+            updateNowBtn.onclick = function (event) {
+              event.preventDefault();
+              event.stopPropagation();
+              forceRefresh(latestVersion);
             };
 
-            updateLaterBtn.onclick = function () {
+            updateLaterBtn.onclick = function (event) {
+              event.preventDefault();
+              event.stopPropagation();
               hideModal();
             };
           }
@@ -145,6 +153,10 @@
           console.error("检查更新失败：", error);
         }
       }
+
+      modalContent.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
 
       modal.addEventListener("click", function (event) {
         if (event.target === modal) {

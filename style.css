@@ -248,4 +248,8 @@ code {
   .nav-card-desc {
     min-height: auto;
   }
+  .avatar-image {
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+}
 }

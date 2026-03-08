@@ -44,10 +44,83 @@
       </a>
     </section>
 
-
     <footer class="footer">
       <p>© 2026 55_Lar · Powered by GitHub Pages</p>
     </footer>
   </main>
+
+  <div id="update-modal" class="update-modal hidden" aria-hidden="true">
+    <div class="update-modal-content card" role="dialog" aria-modal="true" aria-labelledby="update-modal-title">
+      <p class="update-badge">站点更新提醒</p>
+      <h2 id="update-modal-title">发现新版本</h2>
+      <p class="update-modal-text">
+        网站内容已经更新，点击“立即更新”即可查看最新版本。
+      </p>
+      <div class="update-actions">
+        <button id="update-now" class="update-btn update-btn-primary" type="button">立即更新</button>
+        <button id="update-later" class="update-btn update-btn-secondary" type="button">稍后再说</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "homepage_seen_version";
+      const VERSION_URL = "./version.json?ts=" + Date.now();
+
+      const modal = document.getElementById("update-modal");
+      const updateNowBtn = document.getElementById("update-now");
+      const updateLaterBtn = document.getElementById("update-later");
+
+      if (!modal || !updateNowBtn || !updateLaterBtn) return;
+
+      function showModal() {
+        modal.classList.remove("hidden");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function hideModal() {
+        modal.classList.add("hidden");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      async function checkForUpdate() {
+        try {
+          const response = await fetch(VERSION_URL, { cache: "no-store" });
+          if (!response.ok) return;
+
+          const data = await response.json();
+          const latestVersion = data.version;
+          if (!latestVersion) return;
+
+          const seenVersion = localStorage.getItem(STORAGE_KEY);
+
+          if (!seenVersion) {
+            localStorage.setItem(STORAGE_KEY, latestVersion);
+            return;
+          }
+
+          if (seenVersion !== latestVersion) {
+            showModal();
+
+            updateNowBtn.onclick = function () {
+              localStorage.setItem(STORAGE_KEY, latestVersion);
+              const url = new URL(window.location.href);
+              url.searchParams.set("v", latestVersion);
+              window.location.href = url.toString();
+            };
+
+            updateLaterBtn.onclick = function () {
+              hideModal();
+            };
+          }
+        } catch (error) {
+          console.error("检查更新失败：", error);
+        }
+      }
+
+      checkForUpdate();
+    })();
+  </script>
 </body>
 </html>

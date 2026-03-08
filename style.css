@@ -229,9 +229,9 @@ code {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(4, 8, 18, 0.58);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(4, 8, 18, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .update-modal.hidden {
@@ -239,11 +239,13 @@ code {
 }
 
 .update-modal-content {
-  width: min(100%, 420px);
-  padding: 24px;
+  width: min(100%, 440px);
+  padding: 28px 24px;
   border-radius: 24px;
   position: relative;
   z-index: 1;
+  text-align: center;
+  animation: updateModalIn 0.22s ease;
 }
 
 .update-badge {
@@ -252,12 +254,14 @@ code {
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-align: center;
 }
 
 .update-modal-content h2 {
   margin: 0 0 12px;
   font-size: 28px;
   line-height: 1.2;
+  text-align: center;
 }
 
 .update-modal-text {
@@ -265,13 +269,14 @@ code {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.8;
+  text-align: center;
 }
 
 .update-actions {
   margin-top: 22px;
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: center;
   flex-wrap: wrap;
 }
 
@@ -279,9 +284,10 @@ code {
   border: 1px solid transparent;
   border-radius: 14px;
   padding: 10px 18px;
+  min-width: 120px;
   font: inherit;
   cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 
 .update-btn:hover {
@@ -299,6 +305,17 @@ code {
   background: rgba(255, 255, 255, 0.04);
   border-color: var(--card-border);
   color: var(--text);
+}
+
+@keyframes updateModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 720px) {
@@ -344,7 +361,7 @@ code {
   }
 
   .update-actions {
-    justify-content: stretch;
+    justify-content: center;
   }
 
   .update-btn {
